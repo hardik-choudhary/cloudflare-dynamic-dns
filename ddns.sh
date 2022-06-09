@@ -47,8 +47,8 @@ updateDNS () {
 # Call the 'updateDNS' function for each record that needs to be updated
 # example: updateDNS 'domain.name' 'RecordType' 'TTL' 'Proxied'
 
-domain1="*.local.thintake.in"
-domain2="local.thintake.in"
+domain1="*.local.example.com"
+domain2="local.example.com"
 type1="A"
 ttl1=1
 proxied1=true
