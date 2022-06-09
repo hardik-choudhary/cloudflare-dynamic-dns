@@ -10,26 +10,42 @@ updateDNS () {
         ttl=$3
         proxied=$4
 
+        if [ "${ttl}" -lt 120 ] || [ "${ttl}" -gt 7200 ] && [ "${ttl}" -ne 1 ]; then
+          echo "Error: ttl out of range (120-7200) or 1 for auto"
+          return
+        fi
+
+        if [ "${proxied}" != "false" ] && [ "${proxied}" != "true" ]; then
+          echo "Error: Incorrect 'proxied' parameter choose 'true' or 'false'"
+          return
+        fi
+
         ping -q -w 1 -c 1 8.8.8.8 > /dev/null
         if [ $? -eq 1 ]; then
-                echo "Not connected to internet"
+                echo "Error: Not connected to internet"
                 exit 1
         fi
 
-        ipAddress=$(curl -s https://ipinfo.io/ip)
+        ipAddress=$(curl -s -X GET https://checkip.amazonaws.com --max-time 10)
         if [ "ipAddress" = "" ]; then
-                echo "No IP address to set record value with."
+                echo "Error: No IP address to set record value with."
                 exit 1
         fi
-
-        echo "New IP is: $ipAddress"
 
         nameDetails=`curl -s --request GET --url "https://api.cloudflare.com/client/v4/zones/$zoneId/dns_records?name=$domain" --header "Authorization: Bearer $apiToken"`
-        nameId=`echo $nameDetails | grep -Po '"id": *\K"[^"]*"'`
-        nameId=`echo "$nameId" | tr -d '"'`
+        nameId=`echo $nameDetails | grep -o '"id":"[^"]*' | cut -d'"' -f 4`
+        oldIP=`echo $nameDetails | grep -o '"content":"[^"]*' | cut -d'"' -f 4)`
+
         if [ "$nameId" = "" ]; then
-                echo "Cloudflare DNS Record id could not be found, please make sure it exists"
-                exit 1
+                echo "Error: Cloudflare DNS Record id could not be found, please make sure it exists"
+                return
+        fi
+
+        echo "New IP: $ipAddress | Old Ip: $oldIP"
+
+        if [ $oldIP = $ipAddress ]; then
+          echo "No changes in IP address"
+          return
         fi
 
         updateResponse=`curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$zoneId/dns_records/$nameId" -H "Authorization: Bearer $apiToken" -H "content-type: application/json" --data "{\"type\":\"$type\",\"name\":\"$domain\",\"content\":\"$ipAddress\",\"ttl\":$ttl,\"proxied\":$proxied}"`
@@ -40,7 +56,7 @@ updateDNS () {
                 echo "$domain updated."
         else
                 echo "$domain update failed."
-                exit 1
+                return
         fi
 }
 
