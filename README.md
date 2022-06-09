@@ -7,10 +7,10 @@ Download the `ddns.sh` file or copy its content. Then open the file in any edito
 	```bash
     apiToken="yourApiTokenHere"
     zoneId="yourZoneIdHere"
-2. Go to end of the file and call the `updateDNS` funcation for each record that needs to be updated. The function accepts four parameters and all are required. Example: `updateDNS 'test.thintake.in' 'A' 0 true`
+2. Go to end of the file and call the `updateDNS` funcation for each record that needs to be updated. The function accepts four parameters and all are required. Example: `updateDNS 'test.thintake.in' 'A' 1 true`
 	1. `Record Name`: The Domain or Subdomain that you want to update.
 	2. `Record Type`: Type of record. (Like: A, AAAA, CNAME)
-	3. `TTL`: Set 0 for auto
+	3. `TTL`: Set 1 for auto
 	4. `proxied`: true or false
 3. Save the file, and try it by `sh filename.sh`
 4. Create a cron job to run this file every minute. Thats all.
