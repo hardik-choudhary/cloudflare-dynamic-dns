@@ -4,6 +4,9 @@
 apiToken="putYourApiTokenHere"
 zoneId="putYourZoneIdHere"
 
+datetime=`date '+%d/%m/%Y %H:%M:%S'`
+echo  "Time: $datetime"
+
 updateDNS () {
         domain=$1
         type=$2
@@ -32,9 +35,9 @@ updateDNS () {
                 exit 1
         fi
 
-        nameDetails=`curl -s --request GET --url "https://api.cloudflare.com/client/v4/zones/$zoneId/dns_records?name=$domain" --header "Authorization: Bearer $apiToken"`
+        nameDetails=`curl -s --request GET --url "https://api.cloudflare.com/client/v4/zones/$zoneId/dns_records?name=$domain&type=$type" --header "Authorization: Bearer $apiToken"`
         nameId=`echo $nameDetails | grep -o '"id":"[^"]*' | cut -d'"' -f 4`
-        oldIP=`echo $nameDetails | grep -o '"content":"[^"]*' | cut -d'"' -f 4)`
+        oldIP=`echo $nameDetails | grep -o '"content":"[^"]*' | cut -d'"' -f 4`
 
         if [ "$nameId" = "" ]; then
                 echo "Error: Cloudflare DNS Record id could not be found, please make sure it exists"
